@@ -1,0 +1,52 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   time_utils.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yelmajdo <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/28 23:44:41 by yelmajdo          #+#    #+#             */
+/*   Updated: 2026/08/28 23:44:42 by yelmajdo         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "codexion.h"
+
+long long	get_time_ms(void)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+}
+
+void	set_target_timespec(long long target, struct timespec *ts)
+{
+	ts->tv_sec = target / 1000;
+	ts->tv_nsec = (target % 1000) * 1000000;
+}
+
+void	ft_msleep(long long ms, t_sim *sim)
+{
+	long long	start;
+
+	if (ms <= 0)
+		return ;
+	start = get_time_ms();
+	while (get_time_ms() - start < ms)
+	{
+		if (is_sim_over(sim))
+			return ;
+		usleep(100);
+	}
+}
+
+int	is_sim_over(t_sim *sim)
+{
+	int	val;
+
+	pthread_mutex_lock(&sim->stop_mutex);
+	val = sim->simulation_over;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	return (val);
+}
